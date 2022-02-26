@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: /snap/kompose/19/kompose-linux-amd64 convert
+    kompose.service.type: LoadBalancer
+    kompose.version: 1.21.0 (992df58d8)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: web
+  name: web
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: web
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: /snap/kompose/19/kompose-linux-amd64 convert
+        kompose.service.type: LoadBalancer
+        kompose.version: 1.21.0 (992df58d8)
+      creationTimestamp: null
+      labels:
+        io.kompose.service: web
+    spec:
+      containers:
+      - env:
+        - name: DATABASE_NAME
+          value: ArtIntell
+        - name: JDBC_PASS
+          value: pass
+        - name: JDBC_URL
+          value: jdbc:mysql://db:3306/
+        - name: JDBC_USER
+          value: user
+        image: tomcat:8.5
+        imagePullPolicy: ""
+        name: tomcat
+        ports:
+        - containerPort: 8080
+        resources: {}
+        volumeMounts:
+        - mountPath: ./build/ArtIntell.war:/usr/local/tomcat/webapps/ArtIntell.war
+          name: web-claim0
+      restartPolicy: Always
+      serviceAccountName: ""
+      volumes:
+      - name: web-claim0
+        persistentVolumeClaim:
+          claimName: web-claim0
+status: {}

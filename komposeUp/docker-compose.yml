@@ -1,0 +1,47 @@
+version: "3.3"
+services:
+    db:
+        image: mysql:5.7
+        container_name: mysql
+        restart: always
+        volumes:
+              - ./volumes/setup/init.sql:/docker-entrypoint-initdb.d/init.sql
+        environment:
+            MYSQL_ROOT_PASSWORD: root
+            MYSQL_DATABASE: ArtIntell
+            MYSQL_USER: user
+            MYSQL_PASSWORD: pass
+        ports:
+            - "3306:3306"
+        labels:
+          kompose.service.type: LoadBalancer
+    pma:
+        depends_on:
+            - db
+        image: phpmyadmin/phpmyadmin
+        container_name: pma
+        restart: always
+        environment:
+            PMA_HOST: db
+            PMA_PORT: 3306
+        ports:
+            - "8081:80"
+        # labels:
+        #   kompose.service.type: LoadBalancer
+    web:
+        depends_on:
+            - db
+        image: tomcat:8.5
+        container_name: tomcat
+        volumes:
+            - ./build/ArtIntell.war:/usr/local/tomcat/webapps/ArtIntell.war
+        restart: always
+        ports:
+            - "8080:8080"
+        environment:
+            JDBC_URL: jdbc:mysql://db:3306/
+            DATABASE_NAME: ArtIntell
+            JDBC_USER: user
+            JDBC_PASS: pass
+        # labels:
+        #   kompose.service.type: LoadBalancer
